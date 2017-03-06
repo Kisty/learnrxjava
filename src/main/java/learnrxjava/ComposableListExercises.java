@@ -17,12 +17,12 @@ import learnrxjava.types.MovieList;
 import learnrxjava.types.Video;
 
 /**
- * Mastering concurrency is challenging, But we can make it much easier by simply choosing the right 
- * abstraction to model an asynchronous operation, and then using simple composition operations to 
+ * Mastering concurrency is challenging, But we can make it much easier by simply choosing the right
+ * abstraction to model an asynchronous operation, and then using simple composition operations to
  * glue different instances of these abstractions together to build solutions to complex problems.
- * 
- * To learn how stream composition works, we will first learn how to use the composition methods 
- * (map, filter, flatMap, reduce, zip) to compose together a data structure with which most developers 
+ *
+ * To learn how stream composition works, we will first learn how to use the composition methods
+ * (map, filter, flatMap, reduce, zip) to compose together a data structure with which most developers
  * are already familiar: a list.
  */
 public class ComposableListExercises<T> extends ArrayList<T> implements ComposableList<T> {
@@ -92,11 +92,11 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
                 new Video(675465, "Fracture", 5.0));
 
         ComposableListExercises<JSON> videoAndTitlePairs = new ComposableListExercises<JSON>();
-        
+
         newReleases.forEach(video -> {
            videoAndTitlePairs.add(json("id", video.id, "title", video.title));
         });
-        
+
         return videoAndTitlePairs;
     }
 
@@ -121,19 +121,14 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
     public <R> ComposableList<R> map(Function<T, R> projectionFunction) {
         ComposableListExercises<R> results = new ComposableListExercises<R>();
         this.forEach(itemInList -> {
-            // ------------ INSERT CODE HERE! ----------------------------
-            // Apply the projectionFunction to each item in the list and add
-            // each result to the results list.
-            // Note that you can apply a projectionFunction to a value like this:
-            //  projectionFunction.apply(5)
-            // ------------ INSERT CODE HERE! ----------------------------
-            
+            R result = projectionFunction.apply(itemInList);
+            results.add(result);
+
         });
-        
-        //return results;
-        throw new UnsupportedOperationException("Not implemented yet.");
+
+        return results;
     }
-    
+
     /*
     Exercise 5: Use map() to project a ComposableList of videos into a stream of {id,title} JSON
 
@@ -146,10 +141,11 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
             new Video(654356453, "Bad Boys", 5.0),
             new Video(65432445, "The Chamber", 4.0),
             new Video(675465, "Fracture", 5.0));
-         
+
         // complete this expression 
-        // return newReleases.map(video -> 
-        throw new UnsupportedOperationException("Not implemented yet.");
+         return newReleases.map(video -> {
+             return json("id", video.id, "title", video.title);
+         });
     }
 
     /*
@@ -187,15 +183,14 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
         ComposableListExercises<Video> highRatedVideos = new ComposableListExercises<Video>();
 
         newReleases.forEach(video -> {
-            // Insert code here that adds a video to the highRatedVideos list
-            // if it has a rating of 5.0.
-
+            if (video.rating == 5.f) {
+                highRatedVideos.add(video);
+            }
         });
-        
-        // return highRatedVideos;
-        throw new UnsupportedOperationException("Not implemented yet.");        
+
+        return highRatedVideos;
     }
-    
+
     /*
     Exercise 7: Implement filter()
 
@@ -215,17 +210,13 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
     public ComposableList<T> filter(Predicate<T> predicateFunction) {
         ComposableListExercises<T> results = new ComposableListExercises<T>();
         this.forEach(itemInList -> {
-            // ------------ INSERT CODE HERE! ----------------------------
-            // Apply the predicateFunction to each item in the list. If the
-            // result is true, add the result to the results list.
-            // Note: you can apply the predicateFunction to a value like this:
-            // predicateFunction.test(5)
-            // ------------ INSERT CODE HERE! ----------------------------
-
+            if (predicateFunction.test(itemInList)) {
+                results.add(itemInList);
+            }
         });
 
-        // return results;
-        throw new UnsupportedOperationException("Not implemented yet.");
+         return results;
+//        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     /*
@@ -260,13 +251,13 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
                             5.0
                     ));
 
-        // ------------ INSERT CODE HERE! -----------------------------------
-        // Chain the filter and map functions to select the id of all videos
-        // with a rating of 5.0.
-        // ------------ INSERT CODE HERE! -----------------------------------
-        //return newReleases // Complete this expression
+        return newReleases
+                .filter(video -> video.rating == 5.0f)
+                .map(video -> {
+            return video.id;
+        }); // Complete this expression
 
-        throw new UnsupportedOperationException("Not implemented yet.");
+//        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     /*
@@ -296,14 +287,16 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
 
         ComposableListExercises<Integer> allVideoIdsInMovieLists = new ComposableListExercises<Integer>();
 
-        // ------------   INSERT CODE HERE!  -----------------------------------
-        // Use two nested forEach loops to flatten the movieLists into a list of
-        // video ids.
-        // ------------   INSERT CODE HERE!  -----------------------------------
-        //return allVideoIdsInMovieLists;
-        throw new UnsupportedOperationException("Not implemented yet.");
+        movieLists.forEach(movieList -> {
+            movieList.videos.forEach(video -> {
+                allVideoIdsInMovieLists.add(video.id);
+            });
+        });
+
+        return allVideoIdsInMovieLists;
+//        throw new UnsupportedOperationException("Not implemented yet.");
     }
-    
+
     /*
     Exercise 10: Implement concatMap()
 
@@ -326,25 +319,21 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
     is equivalent to
 
     ComposableList.of(0, 10, 20, 100, 110, 120, 200, 210, 220)
-     */   
+     */
     public <R> ComposableList<R> concatMap(
         Function<T, ComposableList<R>> projectionFunctionThatReturnsList) {
         ComposableListExercises<R> results = new ComposableListExercises<R>();
         for (T itemInList : this) {
-            // ------------ INSERT CODE HERE! ----------------------------
-            // Apply the projection function to each item in the list.
-            // This will create _another_ list. Then loop through each
-            // inner list and add each item to the results list.
-            // Note that you can apply a projectionFunction to a value like this:
-            // projectionFunctionThatReturnsList.apply(5)
-            // ------------ INSERT CODE HERE! ----------------------------
-
+            ComposableList<R> list = projectionFunctionThatReturnsList.apply(itemInList);
+            for (R itemInSubList : list) {
+                results.add(((R) itemInSubList));
+            }
         }
-        
-        //return results;
-        throw new UnsupportedOperationException("Not implemented yet.");
+
+        return results;
+//        throw new UnsupportedOperationException("Not implemented yet.");
     }
-    
+
     /*
     As you may have already guessed, the ComposableList class has the concatMap method. The concatMap method 
     may seem pretty abstract at first, and it may not be immediately obvious how it can be used to transform 
@@ -371,14 +360,12 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
         // Use map and concatAll to flatten the movieLists in a list of video ids.
         // return movieLists // finish expression
         // ------------   INSERT CODE HERE!  -----------------------------------
-        // **************ANSWER START***************//
-        // return movieLists.
-        //     concatMap(movieList -> 
-        //         movieList.videos.map(video -> video.id));
-        // **************ANSWER END***************//
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return movieLists.concatMap(movieList -> {
+            return movieList.videos.map(video -> video.id);
+        });
+//        throw new UnsupportedOperationException("Not implemented yet.");
     }
-    
+
     /*
     exercise 12: Retrieve id, title, and a 150x200 box art url for every video
 
@@ -449,8 +436,15 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
         //   {"id": 675465,"title": "Fracture","boxart":"http://cdn-0.nflximg.com/images/2891/Fracture150.jpg" },
         // };
 
-        // return movieLists // Complete this expression!
-        throw new UnsupportedOperationException("Not implemented yet.");
+         return movieLists.concatMap(movieList -> {
+             return movieList.videos.concatMap(video -> {
+                 return video.boxarts.filter(boxArt -> boxArt.width==150)
+                     .map(boxArt -> {
+                         return json("id", video.id, "title", video.title, "boxart", boxArt.url);
+                     });
+             });
+         }); // Complete this expression!
+//        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     /*
@@ -669,12 +663,12 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
             new HashMap<Integer, String> (),
             (accumulatedMap, video) -> {
                 // ************ INSERT CODE HERE ************
-                // Remember that you the functions passed to map, filter, concatMap, reduce, and zip can only 
-                // change objects created inside the function. That means that you cannot simply add the video to 
+                // Remember that you the functions passed to map, filter, concatMap, reduce, and zip can only
+                // change objects created inside the function. That means that you cannot simply add the video to
                 // the accumulatedMap. You must make a copy of the accumulated map, and add the video title to that.
-                // Granted, this is very inefficient. However there are libraries that provide immutable maps to make 
-                // copying maps very efficient, allowing this to be a viable approach. For the purpose of this 
-                // exercise simply copy the accumulatedMap into a new map, add the video information to the copy, 
+                // Granted, this is very inefficient. However there are libraries that provide immutable maps to make
+                // copying maps very efficient, allowing this to be a viable approach. For the purpose of this
+                // exercise simply copy the accumulatedMap into a new map, add the video information to the copy,
                 // and return the copy.
                 // ************ INSERT CODE HERE ************
                 throw new UnsupportedOperationException("Not implemented yet.");
@@ -793,7 +787,7 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
                         5.0
                 )
         );
-        
+
         ComposableListExercises<Bookmark> bookmarks = ComposableListExercises.of(
                 new Bookmark(470, 23432),
                 new Bookmark(453, 234324),
@@ -867,7 +861,7 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
                 5.0
             )
         );
-        
+
         ComposableListExercises<Bookmark> bookmarks = ComposableListExercises.of(
             new Bookmark(470, 23432),
             new Bookmark(453, 234324),
@@ -994,7 +988,7 @@ public class ComposableListExercises<T> extends ArrayList<T> implements Composab
         }
         return results;
     }
-    
+
     public static <T> ComposableListSolutions<T> of(List<T> list) {
         ComposableListSolutions<T> results = new ComposableListSolutions<T>();
         for (T value : list) {
